@@ -1,117 +1,85 @@
-// Variables globales
+// Chargement des données
 let verbs = [];
-let currentQuestionIndex = 0;
-let correctAnswers = 0;
-
-// Charger les données du fichier verbs.txt
-async function loadVerbs() {
-    const response = await fetch('verbs.txt');
-    const data = await response.text();
-    verbs = data.trim().split('\n').map(line => {
-        const [base, past, participle, translation] = line.split('|').map(item => item.trim());
-        return { base, past, participle, translation };
-    });
-    startQuiz();
-}
-
-// Initialiser le quiz
-function startQuiz() {
-    currentQuestionIndex = 0;
-    correctAnswers = 0;
-    document.getElementById('quiz-section').style.display = 'block';
-    document.getElementById('result-section').style.display = 'none';
-    showQuestion();
-}
-
-// Afficher une question
-function showQuestion() {
-    const question = generateQuestion(verbs[currentQuestionIndex]);
-    document.getElementById('question').innerText = question.text;
-
-    const quizOptions = document.getElementById('quiz-options');
-    quizOptions.innerHTML = '';
-
-    question.options.forEach(option => {
-        const button = document.createElement('button');
-        button.textContent = option.text;
-        button.onclick = () => checkAnswer(option.correct);
-        quizOptions.appendChild(button);
+fetch('verbs.txt')
+    .then(response => response.text())
+    .then(data => {
+        verbs = data.split('\n').map(line => {
+            const [base, past, pastParticiple, translation] = line.split('|').map(word => word.trim());
+            return { base, past, pastParticiple, translation };
+        });
+        startLearning();
     });
 
-    document.getElementById('next-btn').disabled = true;
-}
+let currentVerb = null;
+let progress = 0;
+const totalWords = document.getElementById('total-words');
+const currentProgress = document.getElementById('current-progress');
+const questionEl = document.getElementById('question');
+const answerEl = document.getElementById('answer');
+const feedbackEl = document.getElementById('feedback');
 
-// Générer une question avec options
-function generateQuestion(verb) {
-    const randomType = Math.floor(Math.random() * 3);
-    const options = [];
-    let questionText = '';
-
-    switch (randomType) {
-        case 0: // Question sur le prétérit
-            questionText = `Quel est le prétérit du verbe "${verb.base}" ?`;
-            options.push(...generateOptions(verb.past, 'past'));
-            break;
-        case 1: // Question sur le participe passé
-            questionText = `Quel est le participe passé du verbe "${verb.base}" ?`;
-            options.push(...generateOptions(verb.participle, 'participle'));
-            break;
-        case 2: // Question sur la traduction
-            questionText = `Quelle est la traduction de "${verb.base}" ?`;
-            options.push(...generateOptions(verb.translation, 'translation'));
-            break;
-    }
-
-    return { text: questionText, options };
-}
-
-// Générer les options pour une question
-function generateOptions(correctAnswer, type) {
-    const options = [];
-    options.push({ text: correctAnswer, correct: true });
-
-    while (options.length < 4) {
-        const randomVerb = verbs[Math.floor(Math.random() * verbs.length)];
-        const wrongAnswer = randomVerb[type];
-
-        if (!options.some(option => option.text === wrongAnswer)) {
-            options.push({ text: wrongAnswer, correct: false });
-        }
-    }
-
-    return options.sort(() => Math.random() - 0.5);
-}
-
-// Vérifier la réponse
-function checkAnswer(correct) {
-    if (correct) {
-        correctAnswers++;
-    }
-    document.getElementById('next-btn').disabled = false;
-}
-
-// Passer à la question suivante
-document.getElementById('next-btn').onclick = () => {
-    currentQuestionIndex++;
-
-    if (currentQuestionIndex < verbs.length) {
-        showQuestion();
-    } else {
-        endQuiz();
-    }
+const levels = {
+    0: "base",
+    1: "past",
+    2: "pastParticiple",
+    3: "translation"
 };
 
-// Fin du quiz
-function endQuiz() {
-    document.getElementById('quiz-section').style.display = 'none';
-    document.getElementById('result-section').style.display = 'block';
-    document.getElementById('score').innerText = `Vous avez eu ${correctAnswers} réponses correctes sur ${verbs.length}.`;
+let cardQueue = [];
+let mastery = {}; // Leitner System
+
+function startLearning() {
+    verbs.forEach(verb => mastery[verb.base] = 0); // Initialisation du système Leitner
+    totalWords.textContent = verbs.length;
+    nextQuestion();
 }
 
-// Redémarrer le quiz
-function restartQuiz() {
-    startQuiz();
+function nextQuestion() {
+    if (cardQueue.length === 0) {
+        cardQueue = verbs.slice(); // Recharge toutes les cartes
+    }
+    currentVerb = cardQueue.shift(); // Sélection de la carte
+    const level = mastery[currentVerb.base];
+    const questionType = levels[level % 4];
+    let questionText = "";
+
+    switch (questionType) {
+        case "base":
+            questionText = `Donnez le prétérit de "${currentVerb.base}"`;
+            break;
+        case "past":
+            questionText = `Donnez le participe passé de "${currentVerb.past}"`;
+            break;
+        case "pastParticiple":
+            questionText = `Traduisez "${currentVerb.pastParticiple}"`;
+            break;
+        case "translation":
+            questionText = `Quel est la base verbale pour "${currentVerb.translation}" ?`;
+            break;
+    }
+    questionEl.textContent = questionText;
 }
 
-// Charger les verbes au démarrage
-loadVerbs();
+document.getElementById('submit').addEventListener('click', () => {
+    const userAnswer = answerEl.value.trim().toLowerCase();
+    let correctAnswer = "";
+
+    switch (mastery[currentVerb.base] % 4) {
+        case 0: correctAnswer = currentVerb.past.toLowerCase(); break;
+        case 1: correctAnswer = currentVerb.pastParticiple.toLowerCase(); break;
+        case 2: correctAnswer = currentVerb.translation.toLowerCase(); break;
+        case 3: correctAnswer = currentVerb.base.toLowerCase(); break;
+    }
+
+    if (userAnswer === correctAnswer) {
+        feedbackEl.textContent = "Bonne réponse ! 🎉";
+        mastery[currentVerb.base]++;
+        progress++;
+    } else {
+        feedbackEl.textContent = `Mauvaise réponse. La bonne réponse était "${correctAnswer}".`;
+        cardQueue.push(currentVerb); // Remettre dans la file
+    }
+    currentProgress.textContent = progress;
+    answerEl.value = "";
+    nextQuestion();
+});
