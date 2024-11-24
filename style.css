@@ -1,48 +1,46 @@
+/* styles.css */
 body {
     font-family: Arial, sans-serif;
+    line-height: 1.6;
     margin: 0;
     padding: 0;
-    background-color: #f4f4f9;
+    background: #f4f4f4;
     color: #333;
 }
 
 header {
-    background-color: #6200ea;
+    background: #0078d7;
     color: white;
-    padding: 20px 0;
+    padding: 1rem 0;
     text-align: center;
 }
 
-main {
-    padding: 20px;
-    text-align: center;
+header nav ul {
+    list-style: none;
+    padding: 0;
 }
 
-#question-container {
-    margin: 20px auto;
-    width: 80%;
-    max-width: 400px;
+header nav ul li {
+    display: inline;
+    margin: 0 10px;
 }
 
-#answer {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-}
-
-button {
-    background-color: #6200ea;
+header nav ul li a {
     color: white;
-    border: none;
-    padding: 10px 20px;
-    cursor: pointer;
+    text-decoration: none;
 }
 
-button:hover {
-    background-color: #4500b8;
+section {
+    padding: 2rem;
+    margin: 1rem 0;
+    background: white;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-#feedback {
-    font-size: 1.2em;
-    margin: 10px 0;
+footer {
+    text-align: center;
+    padding: 1rem 0;
+    background: #333;
+    color: white;
 }
