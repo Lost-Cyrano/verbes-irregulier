@@ -3,27 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apprendre les verbes irréguliers</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Apprentissage des Verbes Irréguliers</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
-        <h1>Apprenez les verbes irréguliers efficacement</h1>
+        <h1>Apprends les verbes irréguliers !</h1>
     </header>
     <main>
-        <div id="quiz-section">
-            <h2 id="question">Question</h2>
-            <div id="quiz-options"></div>
-            <button id="next-btn" disabled>Suivant</button>
-        </div>
-        <div id="result-section" style="display: none;">
-            <h2>Résultats</h2>
-            <p id="score"></p>
-            <button onclick="restartQuiz()">Recommencer</button>
+        <div id="app">
+            <div id="question-container">
+                <h2 id="question">Chargement...</h2>
+                <input type="text" id="answer" placeholder="Votre réponse ici...">
+                <button id="submit">Valider</button>
+                <p id="feedback"></p>
+            </div>
+            <div id="progress">
+                <p>Progrès : <span id="current-progress">0</span>/<span id="total-words">0</span></p>
+            </div>
         </div>
     </main>
     <footer>
-        <p>© 2024 - Site éducatif pour apprendre les verbes irréguliers</p>
+        <p>Projet réalisé pour maîtriser les verbes irréguliers.</p>
     </footer>
     <script src="script.js"></script>
 </body>
